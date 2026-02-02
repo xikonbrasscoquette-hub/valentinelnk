@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Valentine?</title>
+    <style>
+        /* --- The "Funny yet Romantic" Background --- */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Comic Sans MS', 'Arial', cursive, sans-serif; /* Slightly cuter font preference */
+            overflow: hidden;
+            /* A cute pink base with subtle white polka dots */
+            background-color: #ffdde1;
+            background-image: radial-gradient(circle, #ffffff 10%, transparent 10%), radial-gradient(circle, #ffffff 10%, transparent 10%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+
+        /* --- The Main Card --- */
+        .card {
+            /* Cherry Red */
+            background-color: #D2042D; 
+            padding: 50px;
+            border-radius: 35px;
+            /* A cute white border to make it pop */
+            border: 8px solid #fff;
+            box-shadow: 0 15px 40px rgba(210, 4, 45, 0.4);
+            text-align: center;
+            max-width: 90%;
+            position: relative;
+            z-index: 10; /* Ensure card stays on top of falling hearts */
+        }
+
+        h1 {
+            /* Pink text with Teddy Bear */
+            color: #FFB6C1; 
+            font-size: 2.2rem;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-weight: 800;
+        }
+
+        /* --- CUTE Buttons --- */
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            position: relative;
+            /* ensuring the container has height so the No button doesn't jump immediately */
+            min-height: 60px; 
+            align-items: center;
+        }
+
+        button {
+            padding: 18px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            /* Extremely Rounded corners for the cute look */
+            border-radius: 50px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Cherry Red Yes Button */
+        #yesBtn {
+            background: linear-gradient(145deg, #D2042D, #b30024);
+            color: white;
+            border: 3px solid #FFB6C1; /* Pink border */
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 15px 25px rgba(210, 4, 45, 0.5);
+        }
+
+        /* The runaway No Button - made cuter */
+        #noBtn {
+            background: #fff;
+            color: #D2042D;
+            border: 3px solid #D2042D;
+            position: absolute; /* Needs to be absolute to run away relative to the card area first */
+            white-space: nowrap;
+        }
+        
+        #noBtn:hover {
+             /* When it runs, give it a little spin */
+            transform: rotate(-5deg);
+        }
+
+        .success-message {
+            display: none;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-top: 20px;
+            animation: popIn 0.5s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- Falling Hearts Styles --- */
+        .falling-heart {
+            position: fixed;
+            top: -10%;
+            font-size: 2rem;
+            /* Emoji colors, or you can use a solid color like #FFB6C1 */
+            opacity: 0.8;
+            z-index: 1; /* Behind the card */
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hearts-container"></div>
+
+    <div class="card">
+        <h1 id="question">WILL YOU BE MY VALENTINE? 🧸</h1>
+        
+        <div class="buttons" id="buttonContainer">
+            <button id="yesBtn">Yes! 🥰</button>
+            <div style="position: relative; width: 100px; height: 60px; display:inline-block;">
+                 <button id="noBtn" style="top:0; left:0;">No 🙈</button>
+            </div>
+           
+        </div>
+
+        <div class="success-message" id="thanks">
+            YAY! I knew you'd say yes! <br> See you on the 14th! ❤️🎉
+        </div>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const question = document.getElementById('question');
+        const thanks = document.getElementById('thanks');
+        const buttonContainer = document.getElementById('buttonContainer');
+        const heartsContainer = document.getElementById('hearts-container');
+
+        let hasRunAway = false;
+
+        // --- The Runaway Logic ---
+        noBtn.addEventListener('mouseover', () => {
+            // If it hasn't run away yet, change its position type to fixed
+            // so it can move outside the card bounds.
+            if (!hasRunAway) {
+                noBtn.style.position = 'fixed';
+                hasRunAway = true;
+            }
+
+            // Get random coordinates within the window buffer
+            const maxX = window.innerWidth - noBtn.offsetWidth - 50;
+            const maxY = window.innerHeight - noBtn.offsetHeight - 50;
+            
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            
+            noBtn.style.left = x + 'px';
+            noBtn.style.top = y + 'px';
+        });
+
+        // --- The Success Logic ---
+        yesBtn.addEventListener('click', () => {
+            question.style.display = 'none';
+            buttonContainer.style.display = 'none';
+            thanks.style.display = 'block';
+            
+            // Increase heart fall rate on success!
+            clearInterval(heartInterval);
+            setInterval(createHeart, 100);
+        });
+
+
+        // --- Falling Hearts Animation Logic ---
+        const emojis = ['💖', '❤️', '💕', '🌸', '🧸', '🥰'];
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('falling-heart');
+            
+            // Pick a random emoji
+            heart.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+
+            // Random horizontal position
+            heart.style.left = Math.random() * 100 + 'vw';
+            
+            // Random size variation (between 1.5rem and 3rem)
+            const size = Math.random() * 1.5 + 1.5; 
+            heart.style.fontSize = size + 'rem';
+
+            // Random animation speed (between 3s and 7s fall time)
+            const duration = Math.random() * 4 + 3;
+            heart.style.animationDuration = duration + 's';
+
+            heartsContainer.appendChild(heart);
+
+            // Remove the heart after it falls to stop the browser crashing from too many elements
+            setTimeout(() => {
+                heart.remove();
+            }, duration * 1000);
+        }
+
+        // Start creating hearts every 350ms
+        const heartInterval = setInterval(createHeart, 350);
+
+    </script>
+</body>
+</html>
